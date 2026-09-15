@@ -1,6 +1,7 @@
 package com.iwish.server;
 
 import com.iwish.common.HashUtil;
+import com.iwish.common.Response;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
