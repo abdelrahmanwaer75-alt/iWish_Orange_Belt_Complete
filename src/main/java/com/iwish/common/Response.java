@@ -15,6 +15,10 @@ public class Response implements Serializable {
         this.success = success;
         this.message = message;
     }
-    public static Response ok(String m) { return new Response(true, m); }
-    public static Response fail(String m) { return new Response(false, m); }
+    public static Response ok(String m) {
+         return new Response(true, m);
+         }
+    public static Response fail(String m) {
+         return new Response(false, m); 
+        }
 }
