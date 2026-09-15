@@ -45,7 +45,8 @@ public class DatabaseManager {
 
     private void initialize() throws Exception {
         try (Connection c = getConnection(); Statement s = c.createStatement()) {
-            s.executeUpdate("CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY AUTO_INCREMENT,name VARCHAR(100) NOT NULL,email VARCHAR(150) NOT NULL UNIQUE,password_hash VARCHAR(64) NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+            s.executeUpdate("CREATE TABLE IF NOT EXISTS users(id INT PRIMARY KEY AUTO_INCREMENT,name VARCHAR(100) NOT NULL,email VARCHAR(150) NOT NULL UNIQUE,password_hash VARCHAR(255) NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+            try { s.executeUpdate("ALTER TABLE users MODIFY password_hash VARCHAR(255) NOT NULL"); } catch (SQLException ignored) { }
             s.executeUpdate("CREATE TABLE IF NOT EXISTS friendships(id INT PRIMARY KEY AUTO_INCREMENT,sender_id INT NOT NULL,receiver_id INT NOT NULL,status VARCHAR(20) NOT NULL DEFAULT 'PENDING',created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,UNIQUE KEY uq_friend_pair(sender_id,receiver_id),FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE)");
             s.executeUpdate("CREATE TABLE IF NOT EXISTS items(id INT PRIMARY KEY AUTO_INCREMENT,name VARCHAR(150) NOT NULL,description VARCHAR(500),default_price DECIMAL(12,2) NOT NULL)");
             s.executeUpdate("CREATE TABLE IF NOT EXISTS wishlist_items(id INT PRIMARY KEY AUTO_INCREMENT,owner_id INT NOT NULL,item_id INT NULL,custom_name VARCHAR(150) NOT NULL,description VARCHAR(500),price DECIMAL(12,2) NOT NULL,collected_amount DECIMAL(12,2) NOT NULL DEFAULT 0,status VARCHAR(20) NOT NULL DEFAULT 'OPEN',created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE SET NULL)");
@@ -106,15 +107,16 @@ public class DatabaseManager {
         String email = String.valueOf(d.getOrDefault("email","")).trim().toLowerCase();
         String password = String.valueOf(d.getOrDefault("password",""));
 
-        if (name.isBlank() || email.isBlank() || password.length() < 4)
-            return Response.fail("Please enter valid data.");
+        if (name.isBlank() || name.length() > 100 || email.isBlank() || email.length() > 150
+                || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$") || password.length() < 8)
+            return Response.fail("Enter a valid name, email, and password (8+ characters).");
 
         try (Connection c = getConnection();
              PreparedStatement p = c.prepareStatement("INSERT INTO users(name,email,password_hash) VALUES(?,?,?)")) {
 
             p.setString(1,name);
             p.setString(2,email);
-            p.setString(3,HashUtil.sha256(password));
+            p.setString(3,HashUtil.passwordHash(password));
             p.executeUpdate();
 
             return Response.ok("Registration successful.");
@@ -130,13 +132,12 @@ public class DatabaseManager {
         String password = String.valueOf(d.getOrDefault("password",""));
 
         try (Connection c = getConnection();
-             PreparedStatement p = c.prepareStatement("SELECT id,name,email FROM users WHERE email=? AND password_hash=?")) {
+             PreparedStatement p = c.prepareStatement("SELECT id,name,email,password_hash FROM users WHERE email=?")) {
 
             p.setString(1,email);
-            p.setString(2,HashUtil.sha256(password));
 
             try (ResultSet r = p.executeQuery()) {
-                if (!r.next())
+                if (!r.next() || !HashUtil.verify(password, r.getString("password_hash")))
                     return Response.fail("Invalid email or password.");
 
                 Map<String,Object> user = new LinkedHashMap<>();
@@ -345,9 +346,11 @@ public class DatabaseManager {
     public Response addWish(Map<String,Object> d) {
         try {
             BigDecimal price = new BigDecimal(String.valueOf(d.get("price")));
+            String name = String.valueOf(d.getOrDefault("name", "")).trim();
+            String description = String.valueOf(d.getOrDefault("description", ""));
 
-            if (price.compareTo(BigDecimal.ZERO) <= 0)
-                return Response.fail("Price must be greater than zero.");
+            if (name.isBlank() || name.length() > 150 || description.length() > 500 || price.compareTo(BigDecimal.ZERO) <= 0 || price.scale() > 2)
+                return Response.fail("Enter a valid name, description and positive price.");
 
             try (Connection c = getConnection();
                  PreparedStatement p = c.prepareStatement(
@@ -361,8 +364,8 @@ public class DatabaseManager {
                 else
                     p.setInt(2,((Number)itemId).intValue());
 
-                p.setString(3,String.valueOf(d.get("name")));
-                p.setString(4,String.valueOf(d.getOrDefault("description","")));
+                p.setString(3,name);
+                p.setString(4,description);
                 p.setBigDecimal(5,price);
                 p.executeUpdate();
 
@@ -376,17 +379,19 @@ public class DatabaseManager {
     public Response updateWish(Map<String,Object> d) {
         try {
             BigDecimal price = new BigDecimal(String.valueOf(d.get("price")));
+            String name = String.valueOf(d.getOrDefault("name", "")).trim();
+            String description = String.valueOf(d.getOrDefault("description", ""));
 
-            if (price.compareTo(BigDecimal.ZERO) <= 0)
-                return Response.fail("Price must be greater than zero.");
+            if (name.isBlank() || name.length() > 150 || description.length() > 500 || price.compareTo(BigDecimal.ZERO) <= 0 || price.scale() > 2)
+                return Response.fail("Enter a valid name, description and positive price.");
 
             try (Connection c = getConnection();
                  PreparedStatement p = c.prepareStatement(
                          "UPDATE wishlist_items SET custom_name=?,description=?,price=? " +
                          "WHERE id=? AND owner_id=? AND collected_amount=0")) {
 
-                p.setString(1,String.valueOf(d.get("name")));
-                p.setString(2,String.valueOf(d.getOrDefault("description","")));
+                p.setString(1,name);
+                p.setString(2,description);
                 p.setBigDecimal(3,price);
                 p.setInt(4,((Number)d.get("wishId")).intValue());
                 p.setInt(5,((Number)d.get("userId")).intValue());
@@ -453,6 +458,21 @@ public class DatabaseManager {
                                 return Response.fail("You cannot contribute to your own item.");
                             }
 
+                            try (PreparedStatement friendship = c.prepareStatement(
+                                    "SELECT COUNT(*) FROM friendships WHERE status='ACCEPTED' AND ((sender_id=? AND receiver_id=?) OR (sender_id=? AND receiver_id=?))")) {
+                                friendship.setInt(1, buyer);
+                                friendship.setInt(2, owner);
+                                friendship.setInt(3, owner);
+                                friendship.setInt(4, buyer);
+                                try (ResultSet fr = friendship.executeQuery()) {
+                                    fr.next();
+                                    if (fr.getInt(1) == 0) {
+                                        c.rollback();
+                                        return Response.fail("You can only contribute to an accepted friend's item.");
+                                    }
+                                }
+                            }
+
                             if ("COMPLETED".equals(status)) {
                                 c.rollback();
                                 return Response.fail("This item is already completed.");
@@ -484,14 +504,22 @@ public class DatabaseManager {
                                 x.executeUpdate();
                             }
 
-                            notify(c,owner,
-                                    "A contribution was added to your wish item: " + name,
-                                    "CONTRIBUTION");
+                            String contributorNames = "your friend";
+                            try (PreparedStatement contributors = c.prepareStatement(
+                                    "SELECT GROUP_CONCAT(DISTINCT u.name ORDER BY u.name SEPARATOR ', ') " +
+                                    "FROM contributions co JOIN users u ON u.id=co.buyer_id WHERE co.wishlist_item_id=?")) {
+                                contributors.setInt(1, wishId);
+                                try (ResultSet cr = contributors.executeQuery()) {
+                                    if (cr.next() && cr.getString(1) != null) contributorNames = cr.getString(1);
+                                }
+                            }
+                            notify(c, owner, "A contribution was added by " + contributorNames + " to your wish item: " + name, "CONTRIBUTION");
+                            notify(c, buyer, "Your contribution was recorded for: " + name, "CONTRIBUTION");
 
-                            if ("COMPLETED".equals(newStatus))
-                                notify(c,owner,
-                                        "Your wish item is fully funded: " + name,
-                                        "GIFT_COMPLETED");
+                            if ("COMPLETED".equals(newStatus)) {
+                                notify(c, buyer, "Your gift contribution completed: " + name, "GIFT_COMPLETED");
+                                notify(c, owner, "Your wish item was fully bought by: " + contributorNames, "GIFT_RECEIVED");
+                            }
 
                             c.commit();
                             return Response.ok("Contribution completed.");

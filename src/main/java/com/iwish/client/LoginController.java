@@ -1,40 +1,62 @@
 package com.iwish.client;
 
-import java.util.Map;
-
 import com.iwish.common.Request;
 import com.iwish.common.Response;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.stage.Stage;
+import java.util.Map;
 
-public class LoginController{
-    @FXML TextField email;
-    @FXML PasswordField password;
-    @FXML Label status;
+public class LoginController {
+    private TextField email;
+    private PasswordField password;
+    private Label status;
 
-    @FXML void login(){
-        if(email.getText().isBlank()||password.getText().isBlank()){
+    public Node view(javafx.stage.Stage stage) {
+        Label brand = new Label("i-Wish");
+        Label title = new Label("Sign In");
+        email = new TextField();
+        email.setPromptText("Email");
+        password = new PasswordField();
+        password.setPromptText("Password");
+        status = new Label();
+
+        Button login = new Button("Sign In");
+        Button register = new Button("Create Account");
+        login.setOnAction(e -> login(stage));
+        register.setOnAction(e -> SceneNav.open(stage, "register", "i-Wish — Register"));
+
+        VBox box = new VBox(15, brand, title, email, password, login, register, status);
+        box.setAlignment(Pos.CENTER);
+        box.setMaxWidth(400);
+        box.setPadding(new Insets(30));
+
+        BorderPane root = new BorderPane(box);
+        root.setPadding(new Insets(40));
+        return root;
+    }
+
+    private void login(javafx.stage.Stage stage) {
+        if (email.getText().isBlank() || password.getText().isBlank()) {
             status.setText("Enter email and password");
             return;
         }
-        try{
-            Response r=ClientApp.api().send(new Request("LOGIN")
-                    .put("email",email.getText())
-                    .put("password",password.getText()));
-            if(r.success){
-                if(r.data instanceof Map<?,?> m) Session.set((Map<String,Object>)m);
-                SceneNav.open((Stage)email.getScene().getWindow(),"home.fxml","i-Wish — Home");
-            }else status.setText(r.message);
-        }catch(Exception e){
+        try {
+            Response r = ClientApp.api().send(new Request("LOGIN")
+                    .put("email", email.getText().trim())
+                    .put("password", password.getText()));
+
+            if (r.success) {
+                if (r.data instanceof Map<?, ?> m) Session.set((Map<String, Object>) m);
+                SceneNav.open(stage, "home", "i-Wish — Home");
+            } else {
+                status.setText(r.message);
+            }
+        } catch (Exception e) {
             status.setText(e.getMessage());
         }
-    }
-
-    @FXML void register() throws Exception{
-        SceneNav.open((Stage)email.getScene().getWindow(),"register.fxml","i-Wish — Register");
     }
 }

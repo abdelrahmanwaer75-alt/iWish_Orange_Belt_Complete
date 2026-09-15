@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.iwish.client.NotificationsController" styleClass="root">
-<top><HBox spacing="10" styleClass="topbar"><Button text="← Back" onAction="#back"/><Label text="Notifications 🔔" styleClass="brand"/></HBox></top>
-<center><VBox spacing="12" padding="20"><ListView fx:id="list" VBox.vgrow="ALWAYS"/><HBox spacing="8"><Button text="Mark as read" onAction="#markRead"/><Button text="Refresh" onAction="#load"/></HBox><Label fx:id="status"/></VBox></center>
-</BorderPane>
