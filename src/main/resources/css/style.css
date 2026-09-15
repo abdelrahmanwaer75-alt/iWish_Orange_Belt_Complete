@@ -1,0 +1,18 @@
+* { -fx-font-family: "Segoe UI"; }
+.root { -fx-background-color: linear-gradient(to bottom right, #f8fbff, #eef4ff); }
+.card { -fx-background-color: white; -fx-background-radius: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 20, 0.2, 0, 8); }
+.title { -fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: #4f46e5; }
+.subtitle { -fx-font-size: 15px; -fx-text-fill: #64748b; }
+.title2 { -fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b; }
+.brand { -fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white; }
+.welcome { -fx-text-fill: white; -fx-font-size: 15px; }
+.topbar { -fx-padding: 18px 25px; -fx-background-color: #4f46e5; -fx-spacing: 18px; -fx-alignment: CENTER_LEFT; }
+.text-field, .password-field { -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 11px; -fx-border-color: #dbe3f0; }
+.button { -fx-background-radius: 10; -fx-padding: 10px 18px; -fx-cursor: hand; }
+.button:hover { -fx-opacity: 0.85; }
+.primary { -fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold; }
+.tile { -fx-background-color: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,.10), 10, .2, 0, 3); }
+.tile:hover { -fx-background-color: #eef2ff; }
+.list-view { -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #dbe3f0; }
+.error { -fx-text-fill: #dc2626; }
+.label { -fx-text-fill: #334155; }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.iwish.client.RegisterController" styleClass="root">
+<VBox maxWidth="450" spacing="14" alignment="CENTER" styleClass="card">
+<Label text="Create your i-Wish account" styleClass="title"/>
+<TextField fx:id="name" promptText="Full name"/>
+<TextField fx:id="email" promptText="Email"/>
+<PasswordField fx:id="password" promptText="Password (4+ characters)"/>
+<PasswordField fx:id="confirm" promptText="Confirm password"/>
+<Button text="Register" onAction="#register" maxWidth="Infinity" styleClass="primary"/>
+<Button text="Back to Sign In" onAction="#back" maxWidth="Infinity"/>
+<Label fx:id="status" styleClass="error"/>
+<padding><Insets top="30" right="35" bottom="30" left="35"/></padding>
+</VBox>
+</StackPane>

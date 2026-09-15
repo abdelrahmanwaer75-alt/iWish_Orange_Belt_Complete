@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.iwish.client.HomeController" styleClass="root">
+<top><VBox styleClass="topbar"><Label text="i-Wish 🎁" styleClass="brand"/><Label fx:id="welcome" styleClass="welcome"/></VBox></top>
+<center><VBox spacing="18" alignment="CENTER" maxWidth="650">
+<Label text="What would you like to do?" styleClass="title2"/>
+<GridPane hgap="15" vgap="15" alignment="CENTER">
+<Button text="🎁 My Wish List" onAction="#wishlist" prefWidth="250" prefHeight="80" styleClass="tile"/>
+<Button text="👥 Friends" onAction="#friends" prefWidth="250" prefHeight="80" styleClass="tile"/>
+<Button text="💝 Friends' Wish Lists" onAction="#discover" prefWidth="250" prefHeight="80" styleClass="tile"/>
+<Button text="🔔 Notifications" onAction="#notifications" prefWidth="250" prefHeight="80" styleClass="tile"/>
+</GridPane>
+<Button text="Sign Out" onAction="#logout"/>
+</VBox></center>
+</BorderPane>

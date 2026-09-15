@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.iwish.client.WishlistController" styleClass="root">
+<top><HBox spacing="10" styleClass="topbar"><Button text="← Back" onAction="#back"/><Label text="My Wish List" styleClass="brand"/></HBox></top>
+<center><VBox spacing="12" padding="20">
+<ListView fx:id="list" VBox.vgrow="ALWAYS" onMouseClicked="#select"/>
+<GridPane hgap="10" vgap="10">
+<Label text="Name:"/><TextField fx:id="name" GridPane.columnIndex="1"/>
+<Label text="Price:" GridPane.rowIndex="1"/><TextField fx:id="price" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+<Label text="Description:" GridPane.rowIndex="2"/><TextField fx:id="description" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+</GridPane>
+<HBox spacing="8"><Button text="Add Item" onAction="#add" styleClass="primary"/><Button text="Update" onAction="#update"/><Button text="Delete" onAction="#delete"/><Button text="Refresh" onAction="#load"/></HBox>
+<Label fx:id="status"/>
+</VBox></center>
+</BorderPane>

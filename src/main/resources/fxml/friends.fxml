@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.iwish.client.FriendsController" styleClass="root">
+<top><HBox spacing="10" styleClass="topbar"><Button text="← Back" onAction="#back"/><Label text="Friends" styleClass="brand"/></HBox></top>
+<center><VBox spacing="12" padding="20">
+<HBox spacing="10"><TextField fx:id="search" promptText="Search users by name..." HBox.hgrow="ALWAYS"/><Button text="Search" onAction="#find"/></HBox>
+<ListView fx:id="list" VBox.vgrow="ALWAYS"/>
+<HBox spacing="8"><Button text="Add Friend" onAction="#add" styleClass="primary"/><Button text="Accept" onAction="#accept"/><Button text="Decline" onAction="#decline"/><Button text="Remove" onAction="#remove"/><Button text="Refresh" onAction="#loadFriends"/></HBox>
+<Label fx:id="status"/>
+</VBox></center>
+</BorderPane>
