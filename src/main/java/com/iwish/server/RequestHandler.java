@@ -5,11 +5,12 @@ import com.iwish.common.Response;
 
 public class RequestHandler {
     private final DatabaseManager db;
+
     public RequestHandler(DatabaseManager db){this.db=db;}
 
-    public Response handle(Request r) {
-        try {
-            return switch(r.action) {
+    public Response handle(Request r){
+        try{
+            return switch(r.action){
                 case "REGISTER" -> db.register(r.data);
                 case "LOGIN" -> db.login(r.data);
                 case "USERS" -> db.users(r.data);
@@ -26,8 +27,10 @@ public class RequestHandler {
                 case "CONTRIBUTE" -> db.contribute(r.data);
                 case "NOTIFICATIONS" -> db.notifications(r.data);
                 case "MARK_READ" -> db.markRead(r.data);
-                default -> Response.fail("Unknown request: " + r.action);
+                default -> Response.fail("Unknown request: "+r.action);
             };
-        } catch(Exception e) { return Response.fail("Server error: "+e.getMessage()); }
+        }catch(Exception e){
+            return Response.fail("Server error: "+e.getMessage());
+        }
     }
 }
